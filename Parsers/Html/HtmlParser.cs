@@ -9,8 +9,21 @@ namespace XperiCode.Parsers.Html
 {
     public class HtmlParser : Parser
     {
-        public HtmlParser(string input) : base(input)
+        public HtmlParser(string input)
+            : base(input)
         {
+        }
+
+        public Node Parse()
+        {
+            Node[] nodes = this.ParseNodes();
+
+            if (nodes.Length == 1)
+            {
+                return nodes[0];
+            }
+
+            return new ElementNode("html", new Attribute[] { }, nodes);
         }
 
         public string ParseTagName()
@@ -41,23 +54,115 @@ namespace XperiCode.Parsers.Html
                 : (Node)this.ParseText();
         }
 
-        public ElementNode ParseElement()
-        {
-            Debug.Assert(this.ConsumeCharacter() == '<');
-            string tagName = this.ParseTagName();
-            //var attributes = this.ParseAttributes();
-            //Debug.Assert(this.ConsumeCharacter() == '>');
-
-            // TODO: Children.
-
-            // TODO: Closing tag.
-
-            return new ElementNode(tagName);
-        }
-
         public TextNode ParseText()
         {
             return new TextNode(this.ConsumeWhile(c => c != '<'));
+        }
+
+        public ElementNode ParseElement()
+        {
+            char theChar;
+            string theString;
+
+            theChar = this.ConsumeCharacter();
+            Debug.Assert(theChar == '<');
+
+            string tagName = this.ParseTagName();
+
+            var attributes = this.ParseAttributes();
+
+            theChar = this.ConsumeCharacter();
+            Debug.Assert(theChar == '>');
+
+            Node[] children = this.ParseNodes();
+
+            theChar = this.ConsumeCharacter();
+            Debug.Assert(theChar == '<');
+
+            theChar = this.ConsumeCharacter();
+            Debug.Assert(theChar == '/');
+
+            theString = this.ParseTagName();
+            Debug.Assert(theString == tagName);
+
+            this.ConsumeWhiteSpace();
+
+            theChar = this.ConsumeCharacter();
+            Debug.Assert(theChar == '>');
+
+            return new ElementNode(tagName, attributes, children);
+        }
+
+        public Attribute[] ParseAttributes()
+        {
+            var result = new Dictionary<string, Attribute>(StringComparer.OrdinalIgnoreCase);
+            
+            do
+            {
+                this.ConsumeWhiteSpace();
+                if (this.NextCharacter() == '>')
+                {
+                    break;
+                }
+
+                Attribute attribute = this.ParseAttribute();
+
+                if (!result.ContainsKey(attribute.Name))
+                {
+                    result.Add(attribute.Name, attribute);
+                }
+            } while (true);
+
+            return result.Values.ToArray();
+        }
+
+        public Attribute ParseAttribute()
+        {
+            string name = this.ParseAttributeName();
+
+            this.ConsumeWhiteSpace();
+
+            char theChar = this.ConsumeCharacter();
+            Debug.Assert(theChar == '=');
+
+            this.ConsumeWhiteSpace();
+
+            string value = this.ParseAttributeValue();
+
+            return new Attribute(name, value);
+        }
+
+        public string ParseAttributeValue()
+        {
+            char openQuote = this.ConsumeCharacter();
+            Debug.Assert(openQuote == '\'' || openQuote == '"');
+
+            string value = this.ConsumeWhile(c => c != openQuote);
+
+            char theChar = this.ConsumeCharacter();
+            Debug.Assert(theChar == openQuote);
+
+            return value;
+        }
+
+        public Node[] ParseNodes()
+        {
+            var result = new List<Node>();
+
+            do
+            {
+                this.ConsumeWhiteSpace();
+
+                if(this.EndOfFile() || this.StartsWith("</"))
+                {
+                    break;
+                }
+
+                result.Add(this.ParseNode());
+
+            } while (true);
+
+            return result.ToArray();
         }
     }
 }

@@ -31,6 +31,11 @@ namespace XperiCode.Parsers
             return (this.NextCharacter() == character);
         }
 
+        public bool StartsWith(string text)
+        {
+            return (this.Input.Substring(this.Position).StartsWith(text));
+        }
+
         public char ConsumeCharacter()
         {
             return this.Input[this.Position++];
@@ -50,7 +55,5 @@ namespace XperiCode.Parsers
         {
             ConsumeWhile(c => Char.IsWhiteSpace(c));
         }
-
-
     }
 }

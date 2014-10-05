@@ -3,11 +3,13 @@
     public class ElementNode : Node
     {
         public string TagName { get; private set; }
-        public Attribute[] Attributes { get; set; }
+        public Attribute[] Attributes { get; private set; }
 
-        public ElementNode(string tagName) : base(NodeType.Element)
+        public ElementNode(string tagName, Attribute[] attributes, Node[] children) : base(NodeType.Element)
         {
             this.TagName = tagName;
+            this.Attributes = attributes;
+            this.Children = children;
         }
     }
 }

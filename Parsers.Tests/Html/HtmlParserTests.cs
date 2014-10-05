@@ -34,9 +34,9 @@ namespace XperiCode.Parsers.Tests.Html
         }
 
         [TestMethod]
-        public void ParseNode_Should_Return_Html_ElementNode()
+        public void ParseNode_Should_Return_One_ElementNode()
         {
-            string input = "<html> <body> </body> </html>";
+            string input = "<html>    </html>";
             var parser = new HtmlParser(input);
 
             Node result = parser.ParseNode();
@@ -45,6 +45,22 @@ namespace XperiCode.Parsers.Tests.Html
             Assert.AreEqual(NodeType.Element, result.Type);
             Assert.IsInstanceOfType(result, typeof(ElementNode));
             Assert.AreEqual("html", ((ElementNode)result).TagName);
+        }
+
+        [TestMethod]
+        public void ParseNode_Should_Return_Two_ElementNodes()
+        {
+            string input = "<div>  </div>  <a></a>";
+            var parser = new HtmlParser(input);
+
+            Node[] result = parser.ParseNodes();
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.Length);
+            Assert.IsInstanceOfType(result[0], typeof(ElementNode));
+            Assert.IsInstanceOfType(result[1], typeof(ElementNode));
+            Assert.AreEqual("div", ((ElementNode)result[0]).TagName);
+            Assert.AreEqual("a", ((ElementNode)result[1]).TagName);
         }
     }
 }
