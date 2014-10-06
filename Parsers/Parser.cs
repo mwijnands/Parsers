@@ -7,7 +7,7 @@ namespace XperiCode.Parsers
 {
     public class Parser
     {
-        public int Position { get; protected set; }
+        public int Position { get; protected internal set; }
         public string Input { get; private set; }
 
         public Parser(string input)

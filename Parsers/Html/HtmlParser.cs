@@ -26,25 +26,24 @@ namespace XperiCode.Parsers.Html
             return new ElementNode("html", new Attribute[] { }, nodes);
         }
 
-        public string ParseTagName()
+        public Node[] ParseNodes()
         {
-            return this.ConsumeWhile(c =>
-                {
-                    return (c >= 'a' && c <= 'z')
-                        || (c >= 'A' && c <= 'Z')
-                        || (c >= '0' && c <= '9');
-                });
-        }
+            var result = new List<Node>();
 
-        public string ParseAttributeName()
-        {
-            return this.ConsumeWhile(c =>
+            do
+            {
+                this.ConsumeWhiteSpace();
+
+                if(this.EndOfFile() || this.StartsWith("</"))
                 {
-                    return (c >= 'a' && c <= 'z')
-                        || (c >= 'A' && c <= 'Z')
-                        || (c >= '0' && c <= '9')
-                        || (c == '-');
-                });
+                    break;
+                }
+
+                result.Add(this.ParseNode());
+
+            } while (true);
+
+            return result.ToArray();
         }
 
         public Node ParseNode()
@@ -93,6 +92,16 @@ namespace XperiCode.Parsers.Html
             return new ElementNode(tagName, attributes, children);
         }
 
+        public string ParseTagName()
+        {
+            return this.ConsumeWhile(c =>
+                {
+                    return (c >= 'a' && c <= 'z')
+                        || (c >= 'A' && c <= 'Z')
+                        || (c >= '0' && c <= '9');
+                });
+        }
+
         public Attribute[] ParseAttributes()
         {
             var result = new Dictionary<string, Attribute>(StringComparer.OrdinalIgnoreCase);
@@ -132,6 +141,17 @@ namespace XperiCode.Parsers.Html
             return new Attribute(name, value);
         }
 
+        public string ParseAttributeName()
+        {
+            return this.ConsumeWhile(c =>
+                {
+                    return (c >= 'a' && c <= 'z')
+                        || (c >= 'A' && c <= 'Z')
+                        || (c >= '0' && c <= '9')
+                        || (c == '-');
+                });
+        }
+
         public string ParseAttributeValue()
         {
             char openQuote = this.ConsumeCharacter();
@@ -143,26 +163,6 @@ namespace XperiCode.Parsers.Html
             Debug.Assert(theChar == openQuote);
 
             return value;
-        }
-
-        public Node[] ParseNodes()
-        {
-            var result = new List<Node>();
-
-            do
-            {
-                this.ConsumeWhiteSpace();
-
-                if(this.EndOfFile() || this.StartsWith("</"))
-                {
-                    break;
-                }
-
-                result.Add(this.ParseNode());
-
-            } while (true);
-
-            return result.ToArray();
         }
     }
 }
