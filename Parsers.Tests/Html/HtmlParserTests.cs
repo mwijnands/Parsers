@@ -100,6 +100,20 @@ namespace XperiCode.Parsers.Tests.Html
         }
 
         [TestMethod]
+        public void ParseNode_Should_Return_Self_Closing_ElementNode()
+        {
+            string input = "<br />";
+            var parser = new HtmlParser(input);
+
+            Node result = parser.ParseNode();
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(NodeType.Element, result.Type);
+            Assert.IsInstanceOfType(result, typeof(ElementNode));
+            Assert.AreEqual("br", ((ElementNode)result).TagName);
+        }
+
+        [TestMethod]
         public void ParseNodes_Should_Return_Two_ElementNodes()
         {
             string input = "<div></div><a></a>";
@@ -142,6 +156,7 @@ namespace XperiCode.Parsers.Tests.Html
                             <body>
                                 <div class='myclass'>
                                     My Text <a href=""#"" target=""_blank"">My Link</a>
+                                    <br />
                                 </div>
                             </body>
                             </html>
@@ -186,7 +201,7 @@ namespace XperiCode.Parsers.Tests.Html
             var div = (ElementNode)body.Children[0];
 
             Assert.AreEqual("div", div.TagName);
-            Assert.AreEqual(2, div.Children.Length);
+            Assert.AreEqual(3, div.Children.Length);
             Assert.AreEqual(1, div.Attributes.Length);
             Assert.AreEqual("class", div.Attributes[0].Name);
             Assert.AreEqual("myclass", div.Attributes[0].Value);
@@ -211,6 +226,13 @@ namespace XperiCode.Parsers.Tests.Html
             var anchorText = (TextNode)anchor.Children[0];
 
             Assert.AreEqual("My Link", anchorText.Text);
+            Assert.IsInstanceOfType(div.Children[2], typeof(ElementNode));
+
+            var br = (ElementNode)div.Children[2];
+
+            Assert.AreEqual("br", br.TagName);
+            Assert.AreEqual(0, br.Children.Length);
+            Assert.AreEqual(0, br.Attributes.Length);
         }
     }
 }

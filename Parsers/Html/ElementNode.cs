@@ -11,5 +11,13 @@
             this.Attributes = attributes;
             this.Children = children;
         }
+
+        public ElementNode(string tagName, Attribute[] attributes) : this(tagName, attributes, new Node[] {})
+        {
+        }
+
+        public ElementNode(string tagName, Node[] children) : this(tagName, new Attribute[] {}, children)
+        {
+        }
     }
 }

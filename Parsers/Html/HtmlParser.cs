@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XperiCode.Parsers.Html
 {
@@ -23,7 +21,7 @@ namespace XperiCode.Parsers.Html
                 return nodes[0];
             }
 
-            return new ElementNode("html", new Attribute[] { }, nodes);
+            return new ElementNode("html", nodes);
         }
 
         public Node[] ParseNodes()
@@ -71,7 +69,15 @@ namespace XperiCode.Parsers.Html
             var attributes = this.ParseAttributes();
 
             theChar = this.ConsumeCharacter();
-            Debug.Assert(theChar == '>');
+            Debug.Assert(theChar == '>' || theChar == '/');
+
+            if (theChar == '/')
+            {
+                theChar = this.ConsumeCharacter();
+                Debug.Assert(theChar == '>');
+
+                return new ElementNode(tagName, attributes);
+            }
 
             Node[] children = this.ParseNodes();
 
@@ -109,7 +115,7 @@ namespace XperiCode.Parsers.Html
             do
             {
                 this.ConsumeWhiteSpace();
-                if (this.NextCharacter() == '>')
+                if (this.NextCharacter() == '>' || this.StartsWith("/>"))
                 {
                     break;
                 }
